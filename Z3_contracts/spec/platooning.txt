@@ -1,0 +1,51 @@
+CONSTANTS:
+    D_platoon := 10
+
+CONTRACT:
+	NAME:
+		accelerate_distance
+	VARIABLES:
+		distance_front := REAL
+		velocity_ego_t := REAL
+		velocity_ego_tnext := REAL
+	ASSUMPTIONS:
+		distance_front > D_platoon
+	GUARANTEES:
+		velocity_ego_tnext > velocity_ego_t
+
+
+CONTRACT:
+	NAME:
+		decelerate_distance
+	VARIABLES:
+		distance_front := REAL
+		velocity_ego_t := REAL
+		velocity_ego_tnext := REAL
+	ASSUMPTIONS:
+		distance_front < D_platoon
+	GUARANTEES:
+		velocity_ego_tnext < velocity_ego_t
+
+
+CONTRACT:
+	NAME:
+		maintainspeed_distance
+	VARIABLES:
+		distance_front := REAL
+		velocity_ego_t := REAL
+		velocity_ego_tnext := REAL
+	ASSUMPTIONS:
+		distance_front == D_platoon
+	GUARANTEES:
+		velocity_ego_tnext == velocity_ego_t
+
+
+CGT:
+    NAME:
+        goal_model_platooning
+    TREE:
+        COMPOSITION:
+            accelerate_distance
+            decelerate_distance
+            maintainspeed_distance
+    ENDTREE

@@ -1,0 +1,33 @@
+CONSTANTS:
+    D_platoon := 10
+    Tradeoff := 100
+
+CONTRACT:
+	NAME:
+		contract_a
+	VARIABLES:
+		distance_front := REAL
+		velocity_ego_t := REAL
+		velocity_ego_tnext := REAL
+	ASSUMPTIONS:
+		distance_front > D_platoon
+	GUARANTEES:
+		velocity_ego_tnext > velocity_ego_t
+
+
+CONTRACT:
+	NAME:
+		contract_b
+	VARIABLES:
+		distance_front := REAL
+		velocity_ego_t := REAL
+		velocity_ego_tnext := REAL
+		signal := REAL
+	ASSUMPTIONS:
+		distance_front < D_platoon
+	GUARANTEES:
+		signal > Tradeoff
+
+
+CHECKS:
+

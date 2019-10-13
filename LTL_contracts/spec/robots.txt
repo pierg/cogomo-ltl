@@ -1,0 +1,35 @@
+CONTRACT:
+	NAME:
+		ordered_visit
+	VARIABLES:
+		location1 := FALSE
+		location2 := FALSE
+	ASSUMPTIONS:
+		G(!(location1 & location2))
+	GUARANTEES:
+		F(location1 & location2) & (!location2 U location1)
+
+CONTRACT:
+	NAME:
+		global_avoidance
+	VARIABLES:
+		location1 := FALSE
+	ASSUMPTIONS:
+		TRUE
+	GUARANTEES:
+		G(!location1)
+
+CHECKS:
+	COMPATIBILITY_COMP(ordered_visit, global_avoidance)
+	CONSISTENCY_COMP(ordered_visit, global_avoidance)
+
+
+CGT:
+    NAME:
+        contract-based-goal-tree
+
+    BEGIN-TREE
+        COMPOSITION:
+            ordered_visit
+            global_avoidance
+    END-TREE

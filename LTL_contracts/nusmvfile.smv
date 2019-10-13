@@ -1,0 +1,10 @@
+MODULE main
+VAR
+	location1: boolean;
+	location2: boolean;
+ASSIGN
+	init(location1) := FALSE;
+	init(location2) := FALSE;
+
+	LTLSPEC !((((G(!(location1 & location2))) & (TRUE)) | !((((G(!(location1 & location2))) -> F(location1 & location2) & (!location2 U location1))) & (((TRUE) -> G(!location1))))));
+	LTLSPEC !(((((G(!(location1 & location2))) -> F(location1 & location2) & (!location2 U location1))) & (((TRUE) -> G(!location1)))));
