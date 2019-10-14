@@ -227,6 +227,8 @@ def run(smvfile, checks):
                     print(y)
                 print('')
 
+    return results
+
 def _clean_line(line):
     """Returns a comment-free, tab-replaced line with no whitespace and the number of tabs"""
     line = line.split(COMMENT_CHAR, 1)[0] # remove comments

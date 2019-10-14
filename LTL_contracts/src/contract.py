@@ -52,6 +52,15 @@ class Contract(object):
         """
         self.assumptions.append(assumption)
 
+    def add_assumptions(self, assumptions):
+        """Adds an assumption to the contract assumptions
+
+        Args:
+            assumptions: a list of string assumption
+        """
+        for assumption in assumptions:
+            self.assumptions.append(assumption)
+
     def add_guarantee(self, guarantee):
         """Adds a guarantee to the contract guarantees
 
@@ -59,6 +68,15 @@ class Contract(object):
             guarantee: a string guarantee
         """
         self.guarantees.append(guarantee)
+
+    def add_guarantees(self, guarantees):
+        """Adds a guarantees to the contract guarantees
+
+        Args:
+            guarantee: a list of string guarantee
+        """
+        for guarantee in guarantees:
+            self.guarantees.append(guarantee)
 
     def get_assumptions(self):
         """Get a concatenated string of all assumptions
@@ -88,9 +106,9 @@ class Contract(object):
 
     def saturate_guarantees(self):
         """Helper function that saturates each guarantee with contract assumptions"""
-        assumptions = self.get_assumptions()
-        self.guarantees = ['(' + assumptions + ' -> ' +
-                           guarantee + ')' for guarantee in self.guarantees]
+        # assumptions = self.get_assumptions()
+        # self.guarantees = ['(' + assumptions + ' -> ' +
+        #                    guarantee + ')' for guarantee in self.guarantees]
 
     def __str__(self):
         """Override the print behavior"""

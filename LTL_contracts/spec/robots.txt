@@ -30,6 +30,6 @@ CGT:
 
     BEGIN-TREE
         COMPOSITION:
-            ordered_visit
-            global_avoidance
+            ordered_visit(l1, l2)
+            global_avoidance(l3)
     END-TREE

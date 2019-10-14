@@ -1,0 +1,25 @@
+CONTRACT:
+	NAME:
+		contract_1
+	VARIABLES:
+		a := FALSE
+		b := FALSE
+	ASSUMPTIONS:
+		G(a)
+	GUARANTEES:
+		G(b)
+
+CONTRACT:
+	NAME:
+		contract_2
+	VARIABLES:
+		b := FALSE
+		c := FALSE
+	ASSUMPTIONS:
+		G(b)
+	GUARANTEES:
+		G(c)
+
+CHECKS:
+	COMPATIBILITY_COMP(contract_1, contract_2)
+	CONSISTENCY_COMP(contract_1, contract_2)
