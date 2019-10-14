@@ -106,9 +106,9 @@ class Contract(object):
 
     def saturate_guarantees(self):
         """Helper function that saturates each guarantee with contract assumptions"""
-        # assumptions = self.get_assumptions()
-        # self.guarantees = ['(' + assumptions + ' -> ' +
-        #                    guarantee + ')' for guarantee in self.guarantees]
+        assumptions = self.get_assumptions()
+        self.guarantees = ['(' + assumptions + ' -> ' +
+                           guarantee + ')' for guarantee in self.guarantees]
 
     def __str__(self):
         """Override the print behavior"""
@@ -141,10 +141,14 @@ class Contracts(object):
         contracts: a list of contract objects
         alphabet: a list of tuples containing the shared alphabet among all contracts
     """
-    def __init__(self):
+    def __init__(self, contract_list=None):
         """Initialize a contracts object"""
         self.contracts = OrderedDict()
         self.alphabet = []
+
+        if contract_list is not None:
+            for contract in contract_list:
+                self.add_contract(contract)
 
     def add_contract(self, contract):
         """Add a contract to the contracts object and update the alphabet

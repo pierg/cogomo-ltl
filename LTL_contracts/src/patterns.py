@@ -132,14 +132,10 @@ if __name__ == '__main__':
 
     visit_1 = Visit("visit", ("a", "d"))
     seq_visit_1 = OrderedVisit("odervisit", ("a", "d", "e", "f"))
-    glob_avoidance = GlobalAvoidance("avoid", "d")
+    glob_avoidance = GlobalAvoidance("avoid", "f")
 
     contract_list = [visit_1, seq_visit_1, glob_avoidance]
-
-    contracts = Contracts()
-    contracts.add_contract(visit_1)
-    contracts.add_contract(seq_visit_1)
-    contracts.add_contract(glob_avoidance)
+    contracts = Contracts(contract_list)
 
     checks = Checks()
     checks.add_check(Compatibility("composition", contract_list))
@@ -149,5 +145,11 @@ if __name__ == '__main__':
     generate(contracts, checks, smv_file)
     results = run(smv_file, checks)
     print(results)
-    mission = composition((visit_1, seq_visit_1))
-    print(mission)
+    if not results[0]:
+        print("The mission is not compatible, fix the assumptions")
+    if not results[1]:
+        print("The mission is not consistent")
+    elif results[0] and results[1]:
+        print("The mission specified is compatible and consistent, composing now..")
+        mission = composition(contract_list)
+        print(mission)
