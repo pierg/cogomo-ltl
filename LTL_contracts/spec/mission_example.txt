@@ -39,7 +39,7 @@ G_comp: F(locA & F(locB)) & !locB U locA & G(locA -> F HI_pickedup) &  HI_locati
 
 In a tree structure C_comp is the root and C_1, C_2, C_3 the leaf nodes.
 
-The assumption of C_2 (WeightPower >= 8) is not be met by the current context but it can be 'relaxed' by further composing with the contract:
+The assumption of C_2 (WeightPower >= 8) can not be met by the current context but it can be 'relaxed' by further composing with the contract:
 
 Cooperate(Robot_1, Robot_2)     C_c
 A_ctx:  Robot_1 & Robot 2
