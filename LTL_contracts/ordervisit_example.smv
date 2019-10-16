@@ -1,0 +1,25 @@
+MODULE main
+VAR
+	locA: boolean;
+	locB: boolean;
+
+/--
+All the formula are checked negated,
+if false, it means that the formula is valid and the counterexample is a valid assignment
+--/
+
+-- Original LTL Formula for Ordered Visit (visit locA BEFORE locB)
+LTLSPEC    !( F(locA & F(locB)) & (!locB U locA) )
+-- This formula is valid but a valid path includes a state where locA and locB are both TRUE
+
+-- Adding the constraint that locB must be visited BEFORE locA should result in an invalid formula
+LTLSPEC    !( F(locA & F(locB)) & (!locB U locA) & (!locA U locB) )
+-- But the formula is still valid because the initial state can be locA and locB both TRUE
+
+-- Adding the physical constraint that locA and locB cannot be TRUE at the same time...
+LTLSPEC    !( F(locA & F(locB)) & (!locB U locA) & G((!locA & locB) | (locA & !locB)) )
+-- Will result in a valid formula
+
+-- But when adding the contradictory constraint that locB must be visited BEFORE locA...
+LTLSPEC    !( F(locA & F(locB)) & (!locB U locA) & G((!locA & locB) | (locA & !locB)) & (!locA U locB) )
+-- Will result in an invalid formula

@@ -9,13 +9,13 @@ if __name__ == "__main__":
 
     smv_file = 'nusmvfile.smv'
 
-    contracts, checks = parse('spec/test.txt')
+    contracts, checks = parse('spec/test_2.txt')
+
+    for contract in contracts.get_contracts():
+        print(contract)
 
     generate(contracts, checks, smv_file)
 
-    run(smv_file, checks)
+    results = run(smv_file, checks)
 
-    composed_contracts = composition(contracts.contracts.values())
-
-    print(composed_contracts)
-
+    print("Check results:" + str(results))

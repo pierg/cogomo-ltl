@@ -1,0 +1,27 @@
+CONTRACT:
+	NAME:
+		contract_1
+	VARIABLES:
+		a := FALSE
+		b := FALSE
+	ASSUMPTIONS:
+		G(!b)
+	GUARANTEES:
+		G(b)
+
+CONTRACT:
+	NAME:
+		contract_2
+	VARIABLES:
+		a := FALSE
+		b := FALSE
+	ASSUMPTIONS:
+		!a U b
+    GUARANTEES:
+		F(a & F b) & G(!b U a)
+
+CHECKS:
+    SATISFIABILITY(contract_1)
+    SATISFIABILITY(contract_2)
+
+

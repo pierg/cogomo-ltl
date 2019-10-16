@@ -48,6 +48,15 @@ class Check(object):
         """
         return self.contracts[name]
 
+
+    def get_contracts(self):
+        """Get all the contracts
+
+        Returns:
+            A list fo contracts
+        """
+        return self.contracts.values()
+
     def __str__(self):
         """Override the print behavior"""
         astr = self.check_type + ': [ '
@@ -127,6 +136,36 @@ class Consistency(Check):
         """Override the print behavior"""
         astr = self.check_type + ': {\n'
         astr += '  type : ' + self.cons_type + '\n'
+        astr += '  contracts: ['
+        for contract in self.contracts.values():
+            astr += contract.name + ', '
+        return astr[:-2] + ']\n}'
+
+
+class Satisfiability(Check):
+    """Satisfiability is a subclass of check for the consistency check type
+
+    Attributes:
+        check_type: a string containing the consistency check type
+        contracts (inherited): an ordered dictionary of contracts associated with a check
+    """
+
+    def __init__(self, contracts=None):
+        super(Satisfiability, self).__init__(contracts)
+        self.check_type = 'satisfiability'
+
+    def get_ltl(self):
+        """Returns the LTL statement for the consistency of two contracts"""
+        formula = ""
+        for i, contract in enumerate(self.contracts.values()):
+            formula = ops.satisfiability(contract)
+            if i < len(self.contracts.values()) - 1:
+                formula += '\n'
+        return formula
+
+    def __str__(self):
+        """Override the print behavior"""
+        astr = self.check_type + ': {\n'
         astr += '  contracts: ['
         for contract in self.contracts.values():
             astr += contract.name + ', '

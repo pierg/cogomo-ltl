@@ -49,6 +49,14 @@ class Check(object):
         """
         return self.contracts[name]
 
+    def get_contracts(self):
+        """Get all the contracts
+
+        Returns:
+            A list fo contracts
+        """
+        return self.contracts.values()
+
     def __str__(self):
         """Override the print behavior"""
         astr = self.check_type + ': [ '
@@ -89,8 +97,6 @@ class Compatibility(Check):
         else:
             contract = ops.conjunction(self.contracts.values())
         return ops.compatibility(contract)
-
-
 
     def __str__(self):
         """Override the print behavior"""

@@ -27,6 +27,14 @@ class Contract(object):
         """
         self.name = name
 
+    def get_name(self):
+        """Returns the contract name
+
+        Args:
+            name: a string name for the contract
+        """
+        return self.name
+
     def add_variable(self, variable):
         """Adds a variable to the contract variables
 
@@ -175,7 +183,7 @@ class Contracts(object):
         Returns:
             A list of contract objects
         """
-        return self.contracts
+        return self.contracts.values()
 
     def get_alphabet(self):
         """Get the shared contract alphabet

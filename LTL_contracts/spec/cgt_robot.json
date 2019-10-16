@@ -1,0 +1,7 @@
+{
+  "name_mission": "new_mission",
+  "cgt": {
+    "Visit": ["a", "b"],
+    "StrictOrderedVisit": ["a", "b", "c"]
+  }
+}

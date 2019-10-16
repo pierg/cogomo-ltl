@@ -25,6 +25,20 @@ def consistency(contract):
     """
     return _ltl_inv(contract.get_guarantees())
 
+
+def satisfiability(contract):
+    """Checks the satisfiability of a contract object
+
+    Args:
+        contract: a contract object
+
+    Returns:
+        A string LTL expression that checks the satisfiability of the input
+    """
+    return _ltl(_imply(contract.get_assumptions(), contract.get_guarantees()))
+
+
+
 def refinement(acontract, bcontract):
     """Checks if acontract refines bcontract
 
@@ -60,7 +74,6 @@ def composition(contracts):
         return contracts[0]
     else:
         comp = contract.Contract()
-        print(str(contracts))
         comp.add_name(contracts[0].name + '_comp_' + contracts[1].name)
         comp.add_variables(_merge(contracts[0].variables, contracts[1].variables))
         comp.add_assumption(_or(_and(contracts[0].get_assumptions(), contracts[1].get_assumptions()),

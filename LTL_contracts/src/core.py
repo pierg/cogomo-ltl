@@ -3,10 +3,10 @@
 import subprocess, re
 from LTL_contracts.src.cgt import Cgt
 from LTL_contracts.src.contract import Contract, Contracts
-from LTL_contracts.src.check import Compatibility, Consistency, Refinement, Checks
+from LTL_contracts.src.check import Compatibility, Consistency, Refinement, Checks, Satisfiability
 
 # contract file attributes
-TAB_WIDTH = 2
+TAB_WIDTH = 4
 FILE_HEADER_INDENT = 0
 CONTRACT_HEADER_INDENT = 1
 CONTRACT_DATA_INDENT = 2
@@ -33,6 +33,8 @@ CGT_TREE_HEADER = 'TREE'
 CGT_END_TREE = 'ENDTREE'
 CGT_END_OPERATION = 'ENDTREE|CONJUNCTION|COMPOSITION'
 REFINEMENT = 'REFINEMENT'
+SATISFIABILITY = 'SATISFIABILITY'
+
 
 def parse(specfile):
     """Parses the system specification file and returns the contracts and checks
@@ -43,10 +45,10 @@ def parse(specfile):
     Returns:
         A tuple containing a contracts object and a checks object
     """
-    cgt, contracts, checks = Cgt(), Contracts(), Checks() # returned contracts and checks
-    contract = Contract() # contract and check holders
-    file_header = '' # file header line contents
-    contract_header = '' # contract header line contents
+    cgt, contracts, checks = Cgt(), Contracts(), Checks()  # returned contracts and checks
+    contract = Contract()  # contract and check holders
+    file_header = ''  # file header line contents
+    contract_header = ''  # contract header line contents
     cgt_header = ''
 
     with open(specfile, 'r') as ifile:
@@ -64,7 +66,7 @@ def parse(specfile):
                     if contract.is_full():
                         contract.saturate_guarantees()
                         contracts.add_contract(contract)
-                    else: # (TODO) add error - contract params incomplete
+                    else:  # (TODO) add error - contract params incomplete
                         pass
                 # parse file headers
                 if CONTRACT_HEADER in line:
@@ -75,7 +77,7 @@ def parse(specfile):
                     file_header = line
                 elif CGT_HEADER in line:
                     file_header = line
-                else: # (TODO) add error - unexpected file heading
+                else:  # (TODO) add error - unexpected file heading
                     pass
 
             # parse contract and check data
@@ -93,29 +95,34 @@ def parse(specfile):
                             contract.add_assumption(line.strip())
                         elif CONTRACT_GUARANTEES_HEADER in contract_header:
                             contract.add_guarantee(line.strip())
-                        else: # (TODO) add error - unexpected contract heading
+                        else:  # (TODO) add error - unexpected contract heading
                             pass
-                    else: # (TODO) add error - unexpected indentation
+                    else:  # (TODO) add error - unexpected indentation
                         pass
                 elif CHECKS_HEADER in file_header:
                     if ntabs == CHECK_DATA_INDENT:
                         check_type, check_contracts = line.split(')', 1)[0].split('(', 1)
-                        check_contracts = [contracts.get_contract(
-                            contract.strip()) for contract in check_contracts.split(',')]
-                        if COMPATIBILITY_COMP_CHECK in check_type.upper():
-                            check = Compatibility('composition', check_contracts)
-                        elif COMPATIBILITY_CONJ_CHECK in check_type.upper():
-                            check = Compatibility('conjunction', check_contracts)
-                        elif CONSISTENCY_COMP_CHECK in check_type.upper():
-                            check = Consistency('composition', check_contracts)
-                        elif CONSISTENCY_CONJ_CHECK in check_type.upper():
-                            check = Consistency('conjunction', check_contracts)
-                        elif REFINEMENT in check_type.upper():
-                            check = Refinement(check_contracts)
-                        else: # (TODO) add error - unrecognized check
-                            pass
+                        if "," in check_contracts:
+                            check_contracts = [contracts.get_contract(
+                                contract.strip()) for contract in check_contracts.split(',')]
+                            if COMPATIBILITY_COMP_CHECK in check_type.upper():
+                                check = Compatibility('composition', check_contracts)
+                            elif COMPATIBILITY_CONJ_CHECK in check_type.upper():
+                                check = Compatibility('conjunction', check_contracts)
+                            elif CONSISTENCY_COMP_CHECK in check_type.upper():
+                                check = Consistency('composition', check_contracts)
+                            elif CONSISTENCY_CONJ_CHECK in check_type.upper():
+                                check = Consistency('conjunction', check_contracts)
+                            elif REFINEMENT in check_type.upper():
+                                check = Refinement(check_contracts)
+                            else:  # (TODO) add error - unrecognized check
+                                pass
+                        else:
+                            check_contract = contracts.get_contract(check_contracts)
+                            if SATISFIABILITY in check_type.upper():
+                                check = Satisfiability([check_contract])
                         checks.add_check(check)
-                    else: # (TODO) add error - unexpected indentation
+                    else:  # (TODO) add error - unexpected indentation
                         pass
                 elif CGT_HEADER in file_header:
                     if ntabs == CGT_HEADER_INDENT:
@@ -131,16 +138,15 @@ def parse(specfile):
                                     while not re.match(CGT_END_OPERATION, line):
                                         line = line + 1
                                         contract_to_compose.append(contracts.get_contract(line.strip()))
-                                    print(contract_to_compose)
-                                    print(contract_to_compose)
 
 
-                        else: # (TODO) add error - unexpected contract heading
+                        else:  # (TODO) add error - unexpected contract heading
                             pass
-                    else: # (TODO) add error - unexpected indentation
+                    else:  # (TODO) add error - unexpected indentation
                         pass
 
     return contracts, checks
+
 
 def generate(contracts, checks, smvfile):
     """Generates a NuSMV file with configured variable declarations and LTL checks
@@ -170,6 +176,7 @@ def generate(contracts, checks, smvfile):
         for check in checks.checks:
             ofile.write(check.get_ltl())
 
+
 def run(smvfile, checks):
     """runs the set of contracts and checks through NuSMV and parses the results to return to the user"""
 
@@ -183,24 +190,58 @@ def run(smvfile, checks):
     output = [x for x in output if not (x[:3] == '***' or x[:7] == 'WARNING' or x == '')]
 
     # Iterate through all remaining lines of output, stopping at each "-- specification line to parse it"
-    result_num = -1      # Counter to keep track of what result you're looking at
-    in_result = False   # Flag to track if you're in a counterexample output
+    result_num = -1  # Counter to keep track of what result you're looking at
+    in_result = False  # Flag to track if you're in a counterexample output
     temp_counterexample = []
     counterexamples = {}
 
     for line in output:
         # If this line is going to indicate whether or not a LTL spec is true/false
         if line[:16] == '-- specification':
-            if in_result == True:
+            check_type = checks.checks[result_num].check_type
+            print("\n" + check_type + " check...")
+            print(line)
+            if in_result:
                 in_result = False
                 counterexamples[result_num] = temp_counterexample
                 temp_counterexample = []
             if 'is false' in line:
-                results.append(True)
                 result_num += 1
+                if check_type == 'refinement':
+                    results.append(False)
+                    print(checks.checks[result_num].get_contracts()[0].get_name() +
+                          " is NOT a refinement of " + checks.checks[result_num].get_contracts()[1].get_name())
+                elif check_type == 'satisfiability':
+                    results.append(False)
+                    print(str([contract.get_name() for contract in
+                               checks.checks[result_num].get_contracts()]) + " are NOT satisfiabiles")
+                elif check_type == 'compatibility':
+                    results.append(True)
+                    print(str([contract.get_name() for contract in
+                               checks.checks[result_num].get_contracts()]) + " are compatible")
+                elif check_type == 'consistency':
+                    results.append(True)
+                    print(str([contract.get_name() for contract in
+                               checks.checks[result_num].get_contracts()]) + " are consistent")
             elif 'is true' in line:
-                results.append(False)
                 result_num += 1
+                if check_type == 'refinement':
+                    results.append(True)
+                    print(checks.checks[result_num].get_contracts()[0].get_name() +
+                          " is a refinement of " + checks.checks[result_num].get_contracts()[1].get_name())
+                elif check_type == 'satisfiability':
+                    results.append(True)
+                    print(str([contract.get_name() for contract in
+                               checks.checks[result_num].get_contracts()]) + " are satisfiabiles")
+                elif check_type == 'compatibility':
+                    results.append(False)
+                    print(str([contract.get_name() for contract in
+                               checks.checks[result_num].get_contracts()]) + " are NOT compatible")
+                elif check_type == 'consistency':
+                    results.append(False)
+                    print(str([contract.get_name() for contract in
+                               checks.checks[result_num].get_contracts()]) + " are NOT consistent")
+            print("")
 
         # If you are currently in a counterexample
         if in_result:
@@ -218,8 +259,10 @@ def run(smvfile, checks):
     for x in range(result_num + 1):
         print("Result of checking:", checks.checks[x])
         if checks.checks[x].check_type == 'refinement':
-            print('Statement is', not results[x])
-        else:    
+            print('The refinement is', results[x])
+        if checks.checks[x].check_type == 'satisfiability':
+            print('The satisfiability is', results[x])
+        else:
             print('Statement is', results[x])
             if results[x] == True:
                 print('Example:')
@@ -229,11 +272,13 @@ def run(smvfile, checks):
 
     return results
 
+
 def _clean_line(line):
     """Returns a comment-free, tab-replaced line with no whitespace and the number of tabs"""
-    line = line.split(COMMENT_CHAR, 1)[0] # remove comments
-    line = line.replace('\t', ' ' * TAB_WIDTH) # replace tabs with spaces
+    line = line.split(COMMENT_CHAR, 1)[0]  # remove comments
+    line = line.replace('\t', ' ' * TAB_WIDTH)  # replace tabs with spaces
     return line.strip(), _line_indentation(line)
+
 
 def _line_indentation(line):
     """Returns the number of indents on a given line"""
