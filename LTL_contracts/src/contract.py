@@ -58,6 +58,7 @@ class Contract(object):
         Args:
             assumption: a string assumption
         """
+        if "TRUE" in self.assumptions: self.assumptions.remove("TRUE")
         self.assumptions.append(assumption)
 
     def add_assumptions(self, assumptions):
@@ -103,6 +104,10 @@ class Contract(object):
         """
         guarantees = [guarantee + ' & ' for guarantee in self.guarantees]
         return '(' + ''.join(guarantees)[:-3] + ')'
+
+
+    def get_variables(self):
+        return self.variables
 
     def is_full(self):
         """Check if contract parameters are filled

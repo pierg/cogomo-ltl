@@ -8,6 +8,10 @@ from check import *
 from core import *
 from z3 import *
 
+from operations import *
+
+from itertools import combinations
+
 
 class PatternError(object):
     pass
@@ -19,9 +23,42 @@ class Pattern(Cgt):
     def __init__(self, name):
         super().__init__()
         self.name = name
+        self.add_assumption("TRUE")
 
 
-class Visit(Pattern):
+
+class CoreMovement(Pattern):
+    """
+    Core Movements Patterns
+    All the variables are locations where there robot can be at a certain time
+    """
+
+    def add_physical_assumptions(self):
+        """
+        Add the assumptions that the robot cannot be at multiple locations at the same time
+        """
+
+        list_locations = []
+        for location in self.get_variables():
+            list_locations.append(location[0])
+
+        ltl_formula = "G("
+        for i, loc in enumerate(list_locations):
+            ltl_formula += "(" + loc
+            for loc_other in list_locations:
+                if loc != loc_other:
+                    ltl_formula += " & !" + loc_other
+            ltl_formula += ")"
+            if i < len(list_locations) -1 :
+                ltl_formula += " | "
+
+        ltl_formula += ")"
+
+        self.add_assumption(ltl_formula)
+
+
+
+class Visit(CoreMovement):
     """
     Visit a set of locations in an unspecified order.
     """
@@ -35,13 +72,11 @@ class Visit(Pattern):
         if list_of_locations is None:
             raise PatternError
 
-        # TODO: add assumptions, e.g. the robot cannot be in the same location at the same time?
-        self.add_assumption("TRUE")
         for location in list_of_locations:
             self.add_variable((location, 'FALSE'))
             self.add_guarantee("F(" + location + ")")
 
-class SequencedVisit(Pattern):
+class SequencedVisit(CoreMovement):
     """
     Visit a set of locations in sequence, one after the other.
     """
@@ -55,8 +90,6 @@ class SequencedVisit(Pattern):
         if list_of_locations is None:
             raise PatternError
 
-        # TODO: add assumptions, e.g. the robot cannot be in the same location at the same time?
-        self.add_assumption("TRUE")
         guarantee = "F("
         for n, location in enumerate(list_of_locations):
             self.add_variable((location, 'FALSE'))
@@ -71,12 +104,13 @@ class SequencedVisit(Pattern):
         self.add_guarantee(guarantee)
 
 
-class OrderedVisit(Pattern):
+class OrderedVisit(CoreMovement):
     """
     Sequence visit does not forbid to visit a successor location before its predecessor, but only that after the
     predecessor is visited the successor is also visited. Ordered visit forbids a successor to be visited
     before its predecessor.
     """
+
 
     def __init__(self, name, list_of_locations=None):
         """
@@ -87,8 +121,6 @@ class OrderedVisit(Pattern):
         if list_of_locations is None:
             raise PatternError
 
-        # TODO: add assumptions, e.g. the robot cannot be in the same location at the same time?
-        self.add_assumption("TRUE")
         guarantee = "F("
         for n, location in enumerate(list_of_locations):
             self.add_variable((location, 'boolean'))
@@ -120,8 +152,6 @@ class GlobalAvoidance(Pattern):
         if list_of_locations is None:
             raise PatternError
 
-        # TODO: add assumptions, e.g. the robot cannot be in the same location at the same time?
-        self.add_assumption("TRUE")
         for location in list_of_locations:
             self.add_variable((location, 'boolean'))
             self.add_guarantee("!" + location + " -> G(!" + location + ")")

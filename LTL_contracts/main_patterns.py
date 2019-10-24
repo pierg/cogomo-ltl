@@ -4,17 +4,21 @@ sys.path.append(os.path.join(os.getcwd(), os.path.pardir))
 
 
 def simple_order_visit():
-    visit_1 = OrderedVisit("visit1", ("a", "b"))
+    visit_1 = OrderedVisit("visit1", ("a", "b", "c", "d"))
     print(visit_1)
 
-    check_1 = Checks()
-    check_1.add_check(Satisfiability([visit_1]))
+    visit_1.add_physical_assumptions()
 
-    generate(Contracts([visit_1]), check_1, smv_file)
+    print(visit_1)
 
-    results = run(smv_file, check_1)
-
-    print(results)
+    # check_1 = Checks()
+    # check_1.add_check(Satisfiability([visit_1]))
+    #
+    # generate(Contracts([visit_1]), check_1, smv_file)
+    #
+    # results = run(smv_file, check_1)
+    #
+    # print(results)
 
 
 
