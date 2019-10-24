@@ -42,6 +42,9 @@ class CoreMovement(Pattern):
         for location in self.get_variables():
             list_locations.append(location[0])
 
+        # Eliminating duplicates
+        list_locations = list(dict.fromkeys(list_locations))
+
         ltl_formula = "G("
         for i, loc in enumerate(list_locations):
             ltl_formula += "(" + loc
@@ -154,4 +157,25 @@ class GlobalAvoidance(Pattern):
 
         for location in list_of_locations:
             self.add_variable((location, 'boolean'))
-            self.add_guarantee("!" + location + " -> G(!" + location + ")")
+            self.add_guarantee("G(!" + location + ")")
+
+
+class DelayedReaction(Pattern):
+    """
+    Delayed Reaction Pattern
+    """
+    def __init__(self, name, trigger=None, reaction=None):
+        """
+
+        :param name:
+        :param trigger: variable representing the atomic proposition for the trigger event
+        :param reaction: variable representing the atomic proposition for the reaction
+        """
+        super().__init__(name)
+        if trigger is None or reaction is None:
+            raise PatternError
+
+        self.add_variable((trigger, 'boolean'))
+        self.add_variable((reaction, 'boolean'))
+
+        self.add_guarantee("G(" + trigger + " -> F(" + reaction + "))")
