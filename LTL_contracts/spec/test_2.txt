@@ -22,6 +22,4 @@ CONTRACT:
 
 CHECKS:
     SATISFIABILITY(contract_1)
-    SATISFIABILITY(contract_2)
-
 

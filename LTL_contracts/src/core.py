@@ -166,10 +166,10 @@ def generate(contracts, checks, smvfile):
         for (var, _) in contracts.get_alphabet():
             ofile.write('\t' + var + ': boolean;\n')
 
-        # write variable assignment declarations
-        ofile.write('ASSIGN\n')
-        for (var, init) in contracts.get_alphabet():
-            ofile.write('\tinit(' + var + ') := ' + init + ';\n')
+        # # write variable assignment declarations
+        # ofile.write('ASSIGN\n')
+        # for (var, init) in contracts.get_alphabet():
+        #     ofile.write('\tinit(' + var + ') := ' + init + ';\n')
         ofile.write('\n')
 
         # write LTL specifications declarations for each check
@@ -212,9 +212,9 @@ def run(smvfile, checks):
                     print(checks.checks[result_num].get_contracts()[0].get_name() +
                           " is NOT a refinement of " + checks.checks[result_num].get_contracts()[1].get_name())
                 elif check_type == 'satisfiability':
-                    results.append(False)
+                    results.append(True)
                     print(str([contract.get_name() for contract in
-                               checks.checks[result_num].get_contracts()]) + " are NOT satisfiabiles")
+                               checks.checks[result_num].get_contracts()]) + " are satisfiabiles")
                 elif check_type == 'compatibility':
                     results.append(True)
                     print(str([contract.get_name() for contract in
@@ -230,9 +230,9 @@ def run(smvfile, checks):
                     print(checks.checks[result_num].get_contracts()[0].get_name() +
                           " is a refinement of " + checks.checks[result_num].get_contracts()[1].get_name())
                 elif check_type == 'satisfiability':
-                    results.append(True)
+                    results.append(False)
                     print(str([contract.get_name() for contract in
-                               checks.checks[result_num].get_contracts()]) + " are satisfiabiles")
+                               checks.checks[result_num].get_contracts()]) + " are NOT satisfiabiles")
                 elif check_type == 'compatibility':
                     results.append(False)
                     print(str([contract.get_name() for contract in

@@ -21,7 +21,6 @@ class Pattern(Cgt):
         self.name = name
 
 
-
 class Visit(Pattern):
     """
     Visit a set of locations in an unspecified order.
@@ -89,10 +88,10 @@ class OrderedVisit(Pattern):
             raise PatternError
 
         # TODO: add assumptions, e.g. the robot cannot be in the same location at the same time?
-        self.add_assumption("G(!a U d)")
+        self.add_assumption("TRUE")
         guarantee = "F("
         for n, location in enumerate(list_of_locations):
-            self.add_variable((location, 'FALSE'))
+            self.add_variable((location, 'boolean'))
 
             guarantee += location
             if n == len(list_of_locations) - 1:
@@ -124,45 +123,5 @@ class GlobalAvoidance(Pattern):
         # TODO: add assumptions, e.g. the robot cannot be in the same location at the same time?
         self.add_assumption("TRUE")
         for location in list_of_locations:
-            self.add_variable((location, 'FALSE'))
+            self.add_variable((location, 'boolean'))
             self.add_guarantee("!" + location + " -> G(!" + location + ")")
-
-
-if __name__ == '__main__':
-
-    smv_file = "nusmvfile.smv"
-
-    visit_1 = OrderedVisit("visit1", ("a", "d"))
-    # visit_2 = OrderedVisit("visit2", ("a", "d"))
-    print(visit_1)
-    # print(visit_2)
-    check_1 = Checks()
-    check_1.add_check(Satisfiability([visit_1]))
-    generate(Contracts([visit_1]), check_1, smv_file)
-    results = run(smv_file, check_1)
-    print(results)
-    #
-    # seq_visit_1 = OrderedVisit("odervisit", ("a", "d", "e", "f"))
-    # glob_avoidance = GlobalAvoidance("avoid", "g")
-    #
-    # print(seq_visit_1)
-    #
-    # contract_list = [visit_1, seq_visit_1, glob_avoidance]
-    # contracts = Contracts(contract_list)
-    #
-    # checks = Checks()
-    # checks.add_check(Compatibility("composition", contract_list))
-    # checks.add_check(Consistency("composition", contract_list))
-    #
-    # smv_file = "nusmvfile.smv"
-    # generate(contracts, checks, smv_file)
-    # results = run(smv_file, checks)
-    # print(results)
-    # if not results[0]:
-    #     print("The mission is not compatible, fix the assumptions")
-    # if not results[1]:
-    #     print("The mission is not consistent")
-    # elif results[0] and results[1]:
-    #     print("The mission specified is compatible and consistent, composing now..")
-    #     mission = composition(contract_list)
-    #     print(mission)

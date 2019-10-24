@@ -143,7 +143,7 @@ class Consistency(Check):
 
 
 class Satisfiability(Check):
-    """Satisfiability is a subclass of check for the consistency check type
+    """Satisfiability is a subclass of check
 
     Attributes:
         check_type: a string containing the consistency check type
@@ -155,7 +155,7 @@ class Satisfiability(Check):
         self.check_type = 'satisfiability'
 
     def get_ltl(self):
-        """Returns the LTL statement for the consistency of two contracts"""
+        """Returns the LTL statement for the satisfiability of the contract"""
         formula = ""
         for i, contract in enumerate(self.contracts.values()):
             formula = ops.satisfiability(contract)

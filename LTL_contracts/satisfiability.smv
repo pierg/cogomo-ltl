@@ -1,0 +1,29 @@
+MODULE main
+VAR
+	b: boolean;
+
+
+/--
+All the formula are checked negated,
+if false, it means that the formula is valid and the counterexample is a valid assignment
+--/
+
+/--
+Case where Guarantees are NOT included in the Assumptions: A = !b, G = b
+--/
+
+-- Consistency:     Guarantees Saturated = b | b = !b -> b
+LTLSPEC !(!b -> b);
+-- The formula is valid, assignment: b = TRUE
+
+-- Compatibility:   Assumptions = !b
+LTLSPEC !(!b);
+-- The formula is valid, assignment: b = FALSE
+
+-- Satisfiability_1:     A -> G (WRONG)
+LTLSPEC !(!b -> (!b -> b));
+-- The formula still results valid for b = TRUE
+
+-- Satisfiability_2:     A & (A -> G) (CORRECT)
+LTLSPEC !(!b & (!b -> (!b -> b)));
+-- The formula still results invalid, there is no assignment of variables to satisfy it. This is what we want

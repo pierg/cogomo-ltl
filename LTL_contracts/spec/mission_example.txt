@@ -72,7 +72,7 @@ Cooperate(Robot_1, Robot_2)     C_c
 A_ctx:  Robot_1 & Robot 2
 G:      WeightPower > 5 & WeightPower < 10
 
-A specification S can be automatically mapped to a selection of contracts that when composed refine S
+A specification S can be automatically mapped to a select`ion of contracts that when composed refine S
 (Ex. S = WeightPower >= 8)
 
 

@@ -35,7 +35,7 @@ def satisfiability(contract):
     Returns:
         A string LTL expression that checks the satisfiability of the input
     """
-    return _ltl(_imply(contract.get_assumptions(), contract.get_guarantees()))
+    return _ltl_inv(_and(contract.get_assumptions(), contract.get_guarantees()))
 
 
 
