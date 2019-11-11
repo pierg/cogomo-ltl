@@ -1,6 +1,0 @@
-MODULE main
-VAR
-	a: boolean;
-	b: boolean;
-
-LTLSPEC G (a & b) | !G(a)

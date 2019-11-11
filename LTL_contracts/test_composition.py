@@ -25,7 +25,7 @@ def check_satisfiability(contract):
     checks = Checks()
 
     checks.add_check(Satisfiability([contract]))
-    generate(Contracts([contract]), checks, smv_file)
+    generate(Contracts([contract]).get_alphabet(), checks, smv_file)
 
     results = run(smv_file, checks)
 
@@ -45,7 +45,7 @@ def check_compatibility_consistency(list_contracts):
     checks.add_check(Compatibility("composition", list_contracts))
     checks.add_check(Consistency("composition", list_contracts))
 
-    generate(Contracts(list_contracts), checks, smv_file)
+    generate(Contracts(list_contracts).get_alphabet(), checks, smv_file)
     results = run(smv_file, checks)
 
     if not results[0]:

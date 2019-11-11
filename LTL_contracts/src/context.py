@@ -32,13 +32,13 @@ class Robot(Context):
     Visit a set of locations in an unspecified order.
     """
 
-    def __init__(self, name, lifting_power=None):
+    def __init__(self, name, weight_power=None):
         """
         :type lifting_power:
         """
         super().__init__(name)
 
-        self.add_variable((lifting_power, "FALSE"))
-        self.add_guarantee("G(" + lifting_power + ")")
+        self.add_variable(('weight_power', "5..15"))
+        self.add_guarantee(weight_power)
 
 

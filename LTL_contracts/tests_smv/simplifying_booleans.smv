@@ -1,0 +1,26 @@
+MODULE main
+
+VAR
+  x : boolean;
+  z : boolean;
+
+   LTLSPEC  (G(z) | !G(z))
+   -- TRUE
+
+   LTLSPEC !(G(z) | !G(z))
+   -- FALSE
+
+   LTLSPEC  (G(z) & G(x) | !(G(z) & G(x)))
+   -- TRUE - is a tautology
+
+   LTLSPEC  !(G(z) & G(x) | !(G(z) & G(x)))
+   -- FALSE - there is an assignment possible
+
+   LTLSPEC  (G(z) & G(x) | !G(z))
+   -- FALSE - is not a tautology
+
+   LTLSPEC !(G(z) & G(x) | !G(z))
+   -- FALSE - there is an assignment possible to make true
+
+   LTLSPEC !(G(z) & G(x) & !G(z))
+   -- TRUE - the formula is inconsistent, no assignment is possible

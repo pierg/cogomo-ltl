@@ -1,6 +1,7 @@
 """Operations module provides LTL operations to test contracts"""
 
 from LTL_contracts.src import contract
+from LTL_contracts.src.core import *
 
 
 def compatibility(contract):
@@ -52,6 +53,19 @@ def refinement(acontract, bcontract):
     return _ltl(_and(_imply(bcontract.get_assumptions(), acontract.get_assumptions()),
                      _imply(acontract.get_guarantees(), bcontract.get_guarantees())))
 
+
+def inclusion(aproposition, bproposition):
+    """Checks if aproposition is included bproposition
+
+    Args:
+        aproposition: a logic proposition
+        bproposition: a logic proposition
+
+    Returns:
+        A string LTL expression that checks if aproposition is included in bproposition
+    """
+    return _ltl(_imply(aproposition, bproposition))
+
 def saturation(contract):
     """Perform a saturation operation on a contract
 
@@ -82,6 +96,74 @@ def composition(contracts):
         contracts.pop(0) #remove first element in list
         contracts[0] = comp #replace "new" first element with conj
         return composition(contracts)
+
+
+def simplify(variables, assumptions, guarantees):
+    """
+    Check if any of the guarantee is inluded in any of the assumptions
+    :param assumption: list of assumptions
+    :param gurantee: list of guarantees
+    :return: (list of assumptions simplified, list of guarantees simplified)
+    """
+
+    simplified_assumptions = []
+    simplified_guarantees = []
+
+    for i, assumption in enumerate(assumptions):
+        for j, guarantee in enumerate(guarantees):
+            # check if all the behaviours of the assumptions are included in the guarantees
+            # if not, then add the assumptions, otherwise simplify them
+            if not check_inclusion(variables, assumption, guarantee):
+                simplified_assumptions.append(assumption)
+                simplified_guarantees.append(guarantee)
+
+    return simplified_assumptions, simplified_guarantees
+
+
+def composition_simplify(contracts):
+    """Perform a composition operation on a list of contracts
+
+    Args:
+        contracts: a list of contract objects
+
+    Returns:
+        A contract object that is the composition of whole list
+    """
+    variables = []
+    for contract in contracts:
+        variables = list(set(variables) | set(contract.variables))
+
+    contracts = list(contracts)
+    # list of list of assumptions for each contract involved in the composition
+    assumptions = [contract.get_assumptions_list() for contract in contracts]
+
+    # list of list of guarantees for each contract involved in the composition
+    guarantees = [contract.get_guarantees_list() for contract in contracts]
+
+    simplified_assumptions = []
+    simplified_guarantees_orneg = []
+
+    for i, assumption in enumerate(assumptions):
+        for j, guarantee in enumerate(guarantees):
+            if i != j:
+                simplified_a, simplified_g = simplify(variables, assumption, guarantee)
+                simplified_assumptions.extend(simplified_a)
+                simplified_guarantees_orneg.extend(simplified_g)
+
+    comp = Contract()
+    name = ""
+    for i, contract in enumerate(contracts):
+        name += contract.name
+        if i < len(contracts):
+            name += "_comp_"
+
+    comp.add_name(name)
+    comp.add_variables(variables)
+    comp.add_assumptions(simplified_assumptions)
+    comp.add_assumptions_orneg(simplified_guarantees_orneg)
+    comp.add_guarantees(guarantees)
+
+    return comp
 
 def conjunction(contracts):
     """Takes the conjunction of a list of contracts
@@ -118,6 +200,11 @@ def _ltl_inv(astr):
 
 def _and(astr, bstr):
     """Returns logical and of astr and bstr"""
+    # TODO: string equality, astr and bstr might contain more than TRUE
+    if 'TRUE' in astr:
+        return bstr
+    if 'TRUE' in bstr:
+        return astr
     return '(' + astr + ' & ' + bstr + ')'
 
 def _or(astr, bstr):

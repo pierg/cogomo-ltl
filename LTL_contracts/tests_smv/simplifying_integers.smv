@@ -1,0 +1,49 @@
+MODULE main
+
+VAR
+  x : 5..15;
+  z : boolean;
+
+   LTLSPEC  (G(x > 10) | !G(x > 10))
+   -- TRUE
+
+   LTLSPEC !(G(x > 10) | !G(x > 10))
+   -- FALSE
+
+   LTLSPEC  (G(x > 10) | !G(x > 11))
+   -- TRUE
+
+   LTLSPEC !(G(x > 10) | !G(x > 11))
+   -- FALSE
+
+   LTLSPEC  (G(x > 10) | !G(x > 7))
+   -- FALSE
+
+   LTLSPEC !(G(x > 10) | !G(x > 7))
+   -- FALSE
+
+   LTLSPEC  (x > 10) -> (x > 11)
+   -- FALSE
+
+   LTLSPEC  !((x > 10) -> (x > 11))
+   -- FALSE
+
+   LTLSPEC  (x > 12) -> (x > 11)
+   -- TRUE
+
+   LTLSPEC  !((x > 12) -> (x > 11))
+   -- FALSE
+
+   LTLSPEC  (x > 11) -> (x > 11)
+   -- TRUE
+
+   LTLSPEC  !((x > 11) -> (x > 11))
+   -- FALSE
+
+   LTLSPEC  (x > 12) -> (x > 11) & z
+   -- FALSE
+
+   LTLSPEC  !((x > 12) -> (x > 11)) & z
+   -- FALSE
+
+

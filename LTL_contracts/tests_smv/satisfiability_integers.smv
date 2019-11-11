@@ -1,0 +1,25 @@
+MODULE main
+
+VAR
+  x : 5..15;
+
+   LTLSPEC  (x < 13 & x > 7) -> x < 13
+
+   LTLSPEC  !((x < 13 & x > 7) -> x < 13)
+
+   LTLSPEC  x > 9 -> x > 8
+
+   LTLSPEC  x > 9 | !(x > 8)
+
+   LTLSPEC  x > 9 -> x > 11
+
+   LTLSPEC  x > 9 | !(x > 11)
+
+   LTLSPEC  x > 13 -> x > 11
+
+   LTLSPEC  !(x > 8 & x > 11)
+
+
+
+
+

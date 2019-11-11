@@ -17,6 +17,7 @@ class Contract(object):
         self.name = ''
         self.variables = []
         self.assumptions = []
+        self.assumptions_orneg = []
         self.guarantees = []
 
     def add_name(self, name):
@@ -39,7 +40,7 @@ class Contract(object):
         """Adds a variable to the contract variables
 
         Args:
-            variable: a tuple containing a variable and initial value
+            variable: a tuple containing a variable and its type
         """
         self.variables.append(variable)
 
@@ -70,6 +71,16 @@ class Contract(object):
         for assumption in assumptions:
             self.assumptions.append(assumption)
 
+    def add_assumptions_orneg(self, assumptions):
+        """Adds an assumption to the contract assumptions
+
+        Args:
+            assumptions: a list of string assumption
+        """
+        for assumption in assumptions:
+            self.assumptions_orneg.append(assumption)
+
+
     def add_guarantee(self, guarantee):
         """Adds a guarantee to the contract guarantees
 
@@ -85,7 +96,11 @@ class Contract(object):
             guarantee: a list of string guarantee
         """
         for guarantee in guarantees:
-            self.guarantees.append(guarantee)
+            if isinstance(guarantee, list):
+                for g in guarantee:
+                    self.guarantees.append(g)
+            else:
+                self.guarantees.append(guarantee)
 
     def get_assumptions(self):
         """Get a concatenated string of all assumptions
@@ -96,6 +111,14 @@ class Contract(object):
         assumptions = [assumption + ' & ' for assumption in self.assumptions]
         return '(' + ''.join(assumptions)[:-3] + ')'
 
+    def get_assumptions_list(self):
+        """Get a concatenated string of all assumptions
+
+        Returns:
+            A parenthesized, concatenated string of assumptions
+        """
+        return self.assumptions
+
     def get_guarantees(self):
         """Get a concatenated string of all guarantees
 
@@ -104,6 +127,9 @@ class Contract(object):
         """
         guarantees = [guarantee + ' & ' for guarantee in self.guarantees]
         return '(' + ''.join(guarantees)[:-3] + ')'
+
+    def get_guarantees_list(self):
+        return self.guarantees
 
 
     def get_variables(self):
@@ -131,10 +157,16 @@ class Contract(object):
             astr += '(' + var + ' := ' + init + '), '
         astr = astr[:-2] + ' ]\n  assumptions: [ '
         for assumption in self.assumptions:
-            astr += assumption + ', '
-        astr = astr[:-2] + ' ]\n  guarantees: [ '
+            astr += assumption + ' & '
+        astr = astr[:-2]
+        if len(self.assumptions_orneg) > 0:
+            astr += '| !( '
+            for assumptions_orneg in self.assumptions_orneg:
+                astr += assumptions_orneg + ' & '
+            astr = astr[:-2] + ')'
+        astr += ' ]\n  guarantees: [ '
         for guarantee in self.guarantees:
-            astr += guarantee + ', '
+            astr += guarantee + ' & '
         return astr[:-2] + ' ]\n]'
 
     def __eq__(self, other):

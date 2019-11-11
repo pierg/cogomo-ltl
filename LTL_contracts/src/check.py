@@ -75,6 +75,27 @@ class Check(object):
         return not self.__eq__(other)
 
 
+
+class Inclusion:
+    """
+
+    """
+    def __init__(self, aprop=None, bprop=None):
+        self.check_type = 'inclusion'
+        self.aprop = aprop
+        self.bprop = bprop
+
+    def get_ltl(self):
+        """Returns the LTL statement for the inclusion"""
+        return ops.inclusion(self.aprop, self.bprop)
+
+    def __str__(self):
+        """Override the print behavior"""
+        astr = self.check_type + ': {\n'
+        astr += '\naprop : [' + self.aprop + ']\nis included in\nbprop : [' + self.bprop + ']\n}'
+        return astr
+
+
 class Compatibility(Check):
     """Compatibility is a subclass of check for the compatibility check type
 
@@ -234,3 +255,4 @@ class Checks(object):
     def __ne__(self, other):
         """Define a non-equality test"""
         return not self.__eq__(other)
+
