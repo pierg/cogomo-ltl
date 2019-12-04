@@ -100,7 +100,7 @@ def composition(contracts):
 
 def simplify(variables, assumptions, guarantees):
     """
-    Check if any of the guarantee is inluded in any of the assumptions
+    Check if any of the guarantee is included in any of the assumptions
     :param assumption: list of assumptions
     :param gurantee: list of guarantees
     :return: (list of assumptions simplified, list of guarantees simplified)
@@ -113,7 +113,7 @@ def simplify(variables, assumptions, guarantees):
         for j, guarantee in enumerate(guarantees):
             # check if all the behaviours of the assumptions are included in the guarantees
             # if not, then add the assumptions, otherwise simplify them
-            if not check_inclusion(variables, assumption, guarantee):
+            if not check_inclusion(variables, guarantee, assumption):
                 simplified_assumptions.append(assumption)
                 simplified_guarantees.append(guarantee)
 

@@ -1,0 +1,45 @@
+CONSTANTS:
+    D_platoon       := 10
+    RSSI_net        := 60
+    ZERO            := 0
+    MAX_STEERING    := 1
+
+CONTRACT:
+	NAME:
+		accelerate_distance
+	VARIABLES:
+		distance_front      := REAL
+		velocity_ego_t      := REAL
+		velocity_ego_tnext  := REAL
+	ASSUMPTIONS:
+		distance_front > D_platoon
+	GUARANTEES:
+		velocity_ego_tnext > velocity_ego_t
+
+
+CONTRACT:
+	NAME:
+		communication_leader
+	VARIABLES:
+		sig_network         := BOOL
+		sig_rssi            := REAL
+		velocity_lea        := REAL
+		steering_lea        := REAL
+	ASSUMPTIONS:
+		sig_network
+		sig_rssi > RSSI_net
+	GUARANTEES:
+		velocity_lea >= ZERO
+		steering_lea <= MAX_STEERING
+        steering_lea >= -MAX_STEERING
+
+
+CGT:
+    NAME:
+        goal_model_platooning
+    TREE:
+        COMPOSITION:
+            accelerate_distance
+            decelerate_distance
+            maintainspeed_distance
+    ENDTREE

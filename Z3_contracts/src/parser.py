@@ -4,7 +4,6 @@
 import subprocess, re
 from Z3_contracts.src.cgt import *
 from Z3_contracts.src.contract import Contract, Contracts
-from Z3_contracts.src.check import Compatibility, Consistency, Refinement, Checks
 
 # contract file attributes
 TAB_WIDTH = 2
@@ -19,7 +18,6 @@ CHECK_DATA_INDENT = 1
 COMMENT_CHAR = '##'
 ASSIGNMENT_CHAR = ':='
 OPERATORS = '<|>|!=| == | >= | <= | \|\| |&&'
-CHECKS_HEADER = 'CHECKS'
 CONTRACT_HEADER = 'CONTRACT'
 CONSTANTS_HEADER = 'CONSTANTS'
 CGT_HEADER = 'CGT'
@@ -33,11 +31,7 @@ CGT_END_OPERATION = 'ENDTREE|CONJUNCTION|COMPOSITION'
 CONTRACT_VARIABLES_HEADER = 'VARIABLES'
 CONTRACT_ASSUMPTIONS_HEADER = 'ASSUMPTIONS'
 CONTRACT_GUARANTEES_HEADER = 'GUARANTEES'
-COMPATIBILITY_COMP_CHECK = 'COMPATIBILITY_COMP'
-COMPATIBILITY_CONJ_CHECK = 'COMPATIBILITY_CONJ'
-CONSISTENCY_COMP_CHECK = 'CONSISTENCY_COMP'
-CONSISTENCY_CONJ_CHECK = 'CONSISTENCY_CONJ'
-REFINEMENT = 'REFINEMENT'
+
 
 def parse(specfile):
     """Parses the system specification file and returns the contracts and checks
@@ -48,10 +42,14 @@ def parse(specfile):
     Returns:
         A tuple containing a contracts object and a checks object
     """
-    cgt = Cgt()
-    contracts, checks = Contracts(), Checks() # returned contracts and checks
-    constants = {}
     contract = Contract() # contract and check holders
+    cgt = Cgt()
+
+    contracts_dictionary = {}
+    cgt_dictionary = {}
+
+    contracts = Contracts()
+    constants = {}
     file_header = '' # file header line contents
     contract_header = '' # contract header line contents
     cgt_header = '' # cgt header line contents
@@ -71,6 +69,8 @@ def parse(specfile):
                     if contract.is_full():
                         # contract.saturate_guarantees()
                         contracts.add_contract(contract)
+                        contracts_dictionary[contract.get_name()] = contract
+                        cgt_dictionary[contract.get_name()] = Cgt(contract.get_name(), contracts=contract)
                     else: # (TODO) add error - contract params incomplete
                         pass
                 # parse file headers
@@ -79,8 +79,6 @@ def parse(specfile):
                 elif CONTRACT_HEADER in line:
                     if file_header:
                         contract = Contract()
-                    file_header = line
-                elif CHECKS_HEADER in line:
                     file_header = line
                 elif CGT_HEADER in line:
                     file_header = line
@@ -126,26 +124,6 @@ def parse(specfile):
                             pass
                     else: # (TODO) add error - unexpected indentation
                         pass
-                elif CHECKS_HEADER in file_header:
-                    if ntabs == CHECK_DATA_INDENT:
-                        check_type, check_contracts = line.split(')', 1)[0].split('(', 1)
-                        check_contracts = [contracts.get_contract(
-                            contract.strip()) for contract in check_contracts.split(',')]
-                        if COMPATIBILITY_COMP_CHECK in check_type.upper():
-                            check = Compatibility('composition', check_contracts)
-                        elif COMPATIBILITY_CONJ_CHECK in check_type.upper():
-                            check = Compatibility('conjunction', check_contracts)
-                        elif CONSISTENCY_COMP_CHECK in check_type.upper():
-                            check = Consistency('composition', check_contracts)
-                        elif CONSISTENCY_CONJ_CHECK in check_type.upper():
-                            check = Consistency('conjunction', check_contracts)
-                        elif REFINEMENT in check_type.upper():
-                            check = Refinement(check_contracts)
-                        else: # (TODO) add error - unrecognized check
-                            pass
-                        checks.add_check(check)
-                    else: # (TODO) add error - unexpected indentation
-                        pass
                 elif CGT_HEADER in file_header:
                     if ntabs == CGT_HEADER_INDENT:
                         cgt_header = line
@@ -164,7 +142,7 @@ def parse(specfile):
                                     compose_goals(contract_to_compose)
 
 
-    return cgt, contracts, checks
+    return contracts_dictionary, cgt_dictionary
 
 
 def _clean_line(line):

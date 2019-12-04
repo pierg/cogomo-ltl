@@ -5,18 +5,23 @@ import os
 import sys
 from Z3_contracts.src.parser import parse
 from Z3_contracts.src.operations import *
+from Z3_contracts.src.cgt import *
 
 sys.path.append(os.path.join(os.getcwd(), os.path.pardir))
 
 if __name__ == "__main__":
 
-    cgt, contracts, checks = parse('spec/test.txt')
+    contracts_dictionary, cgt_dictionary = parse('spec/test_composition.txt')
 
-    print(contracts)
+    for key, value in cgt_dictionary.items():
+        print(str(key) + "\n" + str(value) + "____________________________________________________________________\n\n")
 
-    composed_contracts = composition(contracts)
 
-    print(composed_contracts)
+    keep_short_distance = compose_goals(
+        [cgt_dictionary["accelerate_distance"],
+         cgt_dictionary["communication_leader"]], "composition_test")
 
+    print(keep_short_distance)
+    print("END")
 
 

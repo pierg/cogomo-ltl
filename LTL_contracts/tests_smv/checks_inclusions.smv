@@ -1,0 +1,10 @@
+MODULE main
+VAR
+	HI_pickup: boolean;
+	locA: boolean;
+	weight_power: 5..15;
+
+    LTLSPEC locA -> locA
+    LTLSPEC weight_power > 5 -> weight_power > 10
+    LTLSPEC weight_power > 11 -> weight_power > 10
+	LTLSPEC (G(locA -> F(HI_pickup)) -> TRUE);

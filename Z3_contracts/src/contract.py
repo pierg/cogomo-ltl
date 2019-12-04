@@ -29,6 +29,9 @@ class Contract(object):
         """
         self.name = name
 
+    def get_name(self):
+        return self.name
+
     def add_variable(self, variable):
         """Adds a variable to the contract variables
 
@@ -38,6 +41,8 @@ class Contract(object):
         name, type = variable
         if type == 'REAL':
             self.variables[name] = Real(name)
+        elif type == 'BOOL':
+            self.variables[name] = Bool(name)
 
 
     def add_variables(self, variables):
@@ -115,9 +120,12 @@ class Contract(object):
 
         return lg / (la + lg)
 
+    def is_abstracted(self):
+        return False
+
     def saturate_guarantees(self):
         """
-        In CoGoMo we assume that the assumptions are always true, no saturation needed
+        In CoGoMo we assume that the assumptions are always satisfied, no saturation needed
         """
         pass
 
@@ -125,14 +133,14 @@ class Contract(object):
         """Override the print behavior"""
         astr = '[\n  name: [ ' + self.name + ' ]\n'
         astr += '  variables: [ '
-        for var, init in self.variables:
-            astr += '(' + var + ' := ' + init + '), '
+        for var in self.variables:
+            astr += '(' + var + '), '
         astr = astr[:-2] + ' ]\n  assumptions: [ '
         for assumption in self.assumptions:
-            astr += assumption + ', '
+            astr += str(assumption) + ', '
         astr = astr[:-2] + ' ]\n  guarantees: [ '
         for guarantee in self.guarantees:
-            astr += guarantee + ', '
+            astr += str(guarantee) + ', '
         return astr[:-2] + ' ]\n]'
 
     def __eq__(self, other):

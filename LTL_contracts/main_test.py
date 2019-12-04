@@ -56,11 +56,11 @@ def check_inclusion_test_example():
 
     pickup_object = DelayedReaction("pickup_HI_when_in_A", "locA", "HI_pickup")
 
-    pickup_object.add_assumption("G(weight_power > 10)")
+    pickup_object.add_assumption("F(weight_power > 10)")
 
     print(pickup_object)
 
-    robot_1 = Robot("robot_1", "G(weight_power > 10)")
+    robot_1 = Robot("robot_1", "G(weight_power > 5)")
 
     print(robot_1)
 

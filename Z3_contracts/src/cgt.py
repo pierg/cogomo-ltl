@@ -4,6 +4,7 @@ to store all system contracts and overall system alphabet"""
 import itertools
 from collections import OrderedDict
 from z3 import *
+from Z3_contracts.src.contract_operations import *
 
 class Cgt(object):
     """
@@ -65,16 +66,16 @@ class Cgt(object):
                    ', '.join(str(x) for x in contract.get_assumptions()).replace('\n', ' ').replace(' ', '') + "\n"
             ret += "\t" * level + "G:\t\t" + \
                    ', '.join(str(x) for x in contract.get_guarantees()).replace('\n', ' ').replace(' ', '') + "\n"
-            if contract.is_abstracted():
-                ret += "\t" * level + "G_abs:\t" + \
-                       ', '.join(str(x) for x in contract.get_abstract_guarantees()).replace('\n', ' ').replace(' ',
-                                                                                                                '') + "\n"
+            # if contract.is_abstracted():
+            #     ret += "\t" * level + "G_abs:\t" + \
+            #            ', '.join(str(x) for x in contract.get_abstract_guarantees()).replace('\n', ' ').replace(' ',
+            #                                                                                                     '') + "\n"
         ret += "\n"
-        if len(self.sub_goals) > 0:
+        if self.sub_goals is not None and len(self.sub_goals) > 0:
             ret += "\t" * level + "\t" + self.sub_operation + "\n"
             level += 1
-        for child in self.sub_goals:
-            ret += child.__str__(level + 1)
+            for child in self.sub_goals:
+                ret += child.__str__(level + 1)
         return ret
 
     def __eq__(self, other):
@@ -88,7 +89,7 @@ class Cgt(object):
         return not self.__eq__(other)
     
     
-def compose_goals(contracts_to_compose, name=None, abstract_on_guarantees=None):
+def compose_goals(list_of_cgt, name=None, abstract_on_guarantees=None):
     """
 
     :param name: Name of the goal
@@ -99,8 +100,8 @@ def compose_goals(contracts_to_compose, name=None, abstract_on_guarantees=None):
     contracts = {}
     abstracted_contracts = {}
 
-    for contract in contracts_to_compose:
-        contracts[contract.get_name()] = contract
+    for cgt in list_of_cgt:
+        contracts[cgt.get_name()] = cgt.get_contracts()
 
     if name is None:
         name = '_'.join("{!s}".format(key) for (key, val) in list(contracts.items()))

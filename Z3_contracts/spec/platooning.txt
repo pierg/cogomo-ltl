@@ -1,5 +1,7 @@
 CONSTANTS:
     D_platoon := 10
+    ZERO      := 0
+
 
 CONTRACT:
 	NAME:
