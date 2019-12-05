@@ -40,8 +40,15 @@ CGT:
     NAME:
         goal_model_platooning
     TREE:
-        COMPOSITION:
-            accelerate_distance
-            decelerate_distance
-            maintainspeed_distance
+        NAME:
+            keep_short_distance
+            CONJUNCTION:
+                accelerate_distance
+                decelerate_distance
+                maintainspeed_distance
+            keep_short_distance
+            CONJUNCTION:
+                accelerate_distance
+                decelerate_distance
+                maintainspeed_distance
     ENDTREE

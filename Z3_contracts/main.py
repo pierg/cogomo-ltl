@@ -11,17 +11,23 @@ sys.path.append(os.path.join(os.getcwd(), os.path.pardir))
 
 if __name__ == "__main__":
 
-    cgt_dictionary = parse('spec/test_composition.txt')
+    """Parse Goals from Structured Text File"""
+    goals = parse('spec/platooning.txt')
 
-    for key, value in cgt_dictionary.items():
-        print(str(key) + "\n" + str(value) + "____________________________________________________________________\n\n")
-
-
+    """Declare New Goals that are built on top of existing goals"""
     keep_short_distance = conjoin_goals(
-        [cgt_dictionary["accelerate_distance"],
-         cgt_dictionary["communication_leader"]], "composition_test")
+        [goals["accelerate_distance"], goals["decelerate_distance"], goals["maintainspeed_distance"]],
+        "keep_short_distance",
+        "keep a short distance from the vehicle ahead")
 
-    print(keep_short_distance)
+    follow_leader = conjoin_goals(
+        [goals["accelerate_follow"], goals["decelerate_follow"], goals["maintainspeed_follow"]],
+        "follow_leader",
+        "follow the leader vehicle by keeping its speed")
+
+
+
+
     print("END")
 
 

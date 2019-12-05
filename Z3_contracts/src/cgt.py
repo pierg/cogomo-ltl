@@ -7,12 +7,7 @@ from z3 import *
 from Z3_contracts.src.contract_operations import *
 
 
-class FailComposition(Exception):
-    print("Composition Failed")
-
-
-
-class Cgt(object):
+class Cgt(Contract):
     """
     Contract-based Goal Tree
 
@@ -22,6 +17,7 @@ class Cgt(object):
     """
     def __init__(self,
                  name="no_name",
+                 description="",
                  contracts=None,
                  sub_goals=None,
                  sub_operation=None,
@@ -29,7 +25,10 @@ class Cgt(object):
                  parent_operation=None):
         """Initialize a contracts object"""
 
+        super().__init__()
+
         self.name = name
+        self.description = description
 
         # contracts in conjunction
         if not isinstance(contracts, list):
@@ -95,7 +94,7 @@ class Cgt(object):
         return not self.__eq__(other)
     
     
-def compose_goals(list_of_cgt, name=None, abstract_on_guarantees=None):
+def compose_goals(list_of_cgt, name=None, description="", abstract_on_guarantees=None):
     """
 
     :param name: Name of the goal
@@ -118,13 +117,15 @@ def compose_goals(list_of_cgt, name=None, abstract_on_guarantees=None):
     for contracts in composition_contracts:
         satis, composed_contract = compose_contracts(contracts, abstract_on_guarantees=abstract_on_guarantees)
         if not satis:
-            raise FailComposition
+            raise Exception("Composition Failed")
         composed_contract_list.append(composed_contract)
 
-    # Creating a new Goal parent
-    composed_goal = Cgt(name, composed_contract_list,
-                              sub_goals=list_of_cgt,
-                              sub_operation="COMPOSITION")
+
+    composed_goal = Cgt( name=name,
+                         description=description,
+                         contracts=composed_contract_list,
+                         sub_goals=list_of_cgt,
+                         sub_operation="COMPOSITION")
 
     # Connecting children to the parent
     for goal in list_of_cgt:
@@ -133,7 +134,7 @@ def compose_goals(list_of_cgt, name=None, abstract_on_guarantees=None):
     return composed_goal
 
 
-def conjoin_goals(goals, name):
+def conjoin_goals(goals, goal_name, goal_description):
     conjoined_contracts = []
 
     for goal in goals:
@@ -147,9 +148,11 @@ def conjoin_goals(goals, name):
         return False
 
     # Creating a new Goal parent
-    conjoined_goal = Cgt(name, conjoined_contracts,
-                               sub_goals=goals,
-                               sub_operation="CONJUNCTION")
+    conjoined_goal = Cgt(name=goal_name,
+                         description=goal_description,
+                         contracts=conjoined_contracts,
+                         sub_goals=goals,
+                         sub_operation="CONJUNCTION")
 
     # Connecting children to the parent
     for goal in goals:

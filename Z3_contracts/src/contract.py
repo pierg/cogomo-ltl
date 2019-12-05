@@ -86,7 +86,7 @@ class Contract(object):
         """Adds an assumption to the contract assumptions
 
         Args:
-            assumption: a string assumption
+            assumption: Z3 proposition where the variables are contained in self.variables
         """
         self.assumptions.append(eval(assumption))
 
@@ -94,7 +94,7 @@ class Contract(object):
         """Adds a guarantee to the contract guarantees
 
         Args:
-            guarantee: a string guarantee
+            guarantee: Z3 proposition where the variables are contained in self.variables
         """
         self.guarantees.append(eval(guarantee))
 

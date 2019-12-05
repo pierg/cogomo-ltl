@@ -1,8 +1,7 @@
 #!/usr/bin/env python
 
-import subprocess, re
+import re
 from Z3_contracts.src.cgt import *
-from Z3_contracts.src.contract import Contract, Contracts
 
 # contract file attributes
 TAB_WIDTH = 2
@@ -22,6 +21,7 @@ OPERATORS = '<|>|!=| == | >= | <= | \|\| |&&'
 CONSTANTS_HEADER = 'CONSTANTS'
 
 GOAL_HEADER = 'GOAL'
+ENDGOALS_HEADER = 'ENDGOALS'
 GOAL_NAME_HEADER = 'NAME'
 GOAL_DESCRIPTION_HEADER = 'DESCRIPTION'
 CONTRACT_VARIABLES_HEADER = 'VARIABLES'
@@ -39,22 +39,6 @@ CGT_END_OPERATION = 'ENDTREE|CONJUNCTION|COMPOSITION'
 
 
 
-class IncompleteParameters(Exception):
-    print("Incomplete Parameters")
-
-
-class UnexpectedFileHeading(Exception):
-    print("Unexpected File Heading")
-
-
-class UnexpectedGoalHeading(Exception):
-    print("Unexpected Goal Heading")
-
-
-class UnexpectedIndentation(Exception):
-    print("Unexpected Indentation")
-
-
 def parse(specfile):
     """Parses the system specification file and returns the contracts and checks
 
@@ -65,7 +49,7 @@ def parse(specfile):
         A tuple containing a contracts object and a checks object
     """
 
-    contract = Goal() # contract and check holders
+    contract = Cgt() # contract and check holders
 
     cgt = Cgt()
 
@@ -87,30 +71,31 @@ def parse(specfile):
             # parse file header line
             elif ntabs == FILE_HEADER_INDENT:
                 # store previously parsed contract
-                if GOAL_HEADER in file_header:
+                if GOAL_HEADER in file_header or ENDGOALS_HEADER in file_header:
                     if contract.is_full():
                         # contract.saturate_guarantees()
                         cgt_dictionary[contract.get_name()] = Cgt(contract.get_name(), contracts=contract)
                     else:
-                        raise IncompleteParameters
+                        raise Exception("The Goal has Incomplete Parameters")
                 # parse file headers
                 if CONSTANTS_HEADER in line:
                     file_header = line
                 elif GOAL_HEADER in line:
                     if file_header:
-                        contract = Goal()
+                        contract = Cgt()
                     file_header = line
                 elif CGT_HEADER in line:
                     file_header = line
                 else:
-                    raise UnexpectedFileHeading
+                    raise Exception("Unexpected File Header")
 
-            # parse contract and check data
             else:
+
                 if CONSTANTS_HEADER in file_header:
                     if ntabs == CONSTANTS_DATA_INDENT:
                         var, init = line.split(ASSIGNMENT_CHAR, 1)
                         constants[var.strip()] = int(init.strip())
+
                 elif GOAL_HEADER in file_header:
                     if ntabs == GOAL_HEADER_INDENT:
                         goal_header = line
@@ -143,9 +128,8 @@ def parse(specfile):
                                 line = regx.sub("self.variables['" + variable + "']", line)
                             contract.add_guarantee(line.strip())
                         else:
-                            raise UnexpectedGoalHeading
-                    else:
-                        raise UnexpectedIndentation
+                            raise Exception("Unexpected Goal Header")
+
                 elif CGT_HEADER in file_header:
                     if ntabs == CGT_HEADER_INDENT:
                         cgt_header = line
@@ -163,7 +147,9 @@ def parse(specfile):
                                         contract_to_compose.append(contracts.get_contract(line.strip()))
                                     compose_goals(contract_to_compose)
 
-
+    print("Loaded Goals:\n\n____________________________________________________________________\n\n")
+    for key, value in cgt_dictionary.items():
+        print(str(value) + "____________________________________________________________________\n\n")
     return cgt_dictionary
 
 
@@ -175,4 +161,4 @@ def _clean_line(line):
 
 def _line_indentation(line):
     """Returns the number of indents on a given line"""
-    return (len(line) - len(line.lstrip(' '))) / TAB_WIDTH
+    return int((len(line) - len(line.lstrip(' '))) / TAB_WIDTH)
