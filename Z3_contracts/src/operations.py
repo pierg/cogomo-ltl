@@ -183,7 +183,7 @@ def conjunction(contracts):
         return contracts[0]
     else:
         conj = contract.Contract()
-        conj.add_name(contracts[0].name + "_conj_" + contracts[1].name)
+        conj.set_name(contracts[0].name + "_conj_" + contracts[1].name)
         conj.add_variables(_merge(contracts[0].variables, contracts[1].variables))
         conj.add_assumption(_or(contracts[0].get_assumptions(), contracts[1].get_assumptions()))
         conj.add_guarantee(_and(contracts[0].get_guarantees(), contracts[1].get_guarantees()))

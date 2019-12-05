@@ -1,5 +1,4 @@
 #!/usr/bin/env python
-"""Core module defines the core workflow functions of the LTL contract checker tool"""
 
 import subprocess, re
 from Z3_contracts.src.cgt import *
@@ -8,29 +7,52 @@ from Z3_contracts.src.contract import Contract, Contracts
 # contract file attributes
 TAB_WIDTH = 2
 FILE_HEADER_INDENT = 0
+
 CONSTANTS_HEADER_INDENT = 1
 CONSTANTS_DATA_INDENT = 2
 CGT_HEADER_INDENT = 1
 CGT_DATA_INDENT = 2
-CONTRACT_HEADER_INDENT = 1
-CONTRACT_DATA_INDENT = 2
-CHECK_DATA_INDENT = 1
+GOAL_HEADER_INDENT = 1
+GOAL_DATA_INDENT = 2
+
 COMMENT_CHAR = '##'
 ASSIGNMENT_CHAR = ':='
 OPERATORS = '<|>|!=| == | >= | <= | \|\| |&&'
-CONTRACT_HEADER = 'CONTRACT'
+
 CONSTANTS_HEADER = 'CONSTANTS'
+
+GOAL_HEADER = 'GOAL'
+GOAL_NAME_HEADER = 'NAME'
+GOAL_DESCRIPTION_HEADER = 'DESCRIPTION'
+CONTRACT_VARIABLES_HEADER = 'VARIABLES'
+CONTRACT_ASSUMPTIONS_HEADER = 'ASSUMPTIONS'
+CONTRACT_GUARANTEES_HEADER = 'GUARANTEES'
+
+
 CGT_HEADER = 'CGT'
 CGT_CONJUNCTION_HEADER = 'CONJUNCTION'
 CGT_COMPOSITION_HEADER = 'COMPOSITION'
-CONTRACT_NAME_HEADER = 'NAME'
 CGT_NAME_HEADER = 'NAME'
 CGT_TREE_HEADER = 'TREE'
 CGT_END_TREE = 'ENDTREE'
 CGT_END_OPERATION = 'ENDTREE|CONJUNCTION|COMPOSITION'
-CONTRACT_VARIABLES_HEADER = 'VARIABLES'
-CONTRACT_ASSUMPTIONS_HEADER = 'ASSUMPTIONS'
-CONTRACT_GUARANTEES_HEADER = 'GUARANTEES'
+
+
+
+class IncompleteParameters(Exception):
+    print("Incomplete Parameters")
+
+
+class UnexpectedFileHeading(Exception):
+    print("Unexpected File Heading")
+
+
+class UnexpectedGoalHeading(Exception):
+    print("Unexpected Goal Heading")
+
+
+class UnexpectedIndentation(Exception):
+    print("Unexpected Indentation")
 
 
 def parse(specfile):
@@ -42,16 +64,16 @@ def parse(specfile):
     Returns:
         A tuple containing a contracts object and a checks object
     """
-    contract = Contract() # contract and check holders
+
+    contract = Goal() # contract and check holders
+
     cgt = Cgt()
 
-    contracts_dictionary = {}
     cgt_dictionary = {}
 
-    contracts = Contracts()
     constants = {}
     file_header = '' # file header line contents
-    contract_header = '' # contract header line contents
+    goal_header = '' # contract header line contents
     cgt_header = '' # cgt header line contents
 
     with open(specfile, 'r') as ifile:
@@ -65,25 +87,23 @@ def parse(specfile):
             # parse file header line
             elif ntabs == FILE_HEADER_INDENT:
                 # store previously parsed contract
-                if CONTRACT_HEADER in file_header:
+                if GOAL_HEADER in file_header:
                     if contract.is_full():
                         # contract.saturate_guarantees()
-                        contracts.add_contract(contract)
-                        contracts_dictionary[contract.get_name()] = contract
                         cgt_dictionary[contract.get_name()] = Cgt(contract.get_name(), contracts=contract)
-                    else: # (TODO) add error - contract params incomplete
-                        pass
+                    else:
+                        raise IncompleteParameters
                 # parse file headers
                 if CONSTANTS_HEADER in line:
                     file_header = line
-                elif CONTRACT_HEADER in line:
+                elif GOAL_HEADER in line:
                     if file_header:
-                        contract = Contract()
+                        contract = Goal()
                     file_header = line
                 elif CGT_HEADER in line:
                     file_header = line
-                else: # (TODO) add error - unexpected file heading
-                    pass
+                else:
+                    raise UnexpectedFileHeading
 
             # parse contract and check data
             else:
@@ -91,18 +111,20 @@ def parse(specfile):
                     if ntabs == CONSTANTS_DATA_INDENT:
                         var, init = line.split(ASSIGNMENT_CHAR, 1)
                         constants[var.strip()] = int(init.strip())
-                elif CONTRACT_HEADER in file_header:
-                    if ntabs == CONTRACT_HEADER_INDENT:
-                        contract_header = line
-                    elif ntabs == CONTRACT_DATA_INDENT:
-                        if CONTRACT_NAME_HEADER in contract_header:
-                            contract.add_name(line.strip())
+                elif GOAL_HEADER in file_header:
+                    if ntabs == GOAL_HEADER_INDENT:
+                        goal_header = line
+                    elif ntabs == GOAL_DATA_INDENT:
+                        if GOAL_NAME_HEADER in goal_header:
+                            contract.set_name(line.strip())
                             for key, value in constants.items():
                                 contract.add_constant((key, value))
-                        elif CONTRACT_VARIABLES_HEADER in contract_header:
+                        elif GOAL_DESCRIPTION_HEADER in goal_header:
+                            contract.set_description(line.strip())
+                        elif CONTRACT_VARIABLES_HEADER in goal_header:
                             var, init = line.split(ASSIGNMENT_CHAR, 1)
                             contract.add_variable((var.strip(), init.strip()))
-                        elif CONTRACT_ASSUMPTIONS_HEADER in contract_header:
+                        elif CONTRACT_ASSUMPTIONS_HEADER in goal_header:
                             list_of_variables = re.split(OPERATORS, line)
                             list_stripped = []
                             for elem in list_of_variables:
@@ -111,7 +133,7 @@ def parse(specfile):
                                 regx = re.compile(variable + '\s|' + variable + '$')
                                 line = regx.sub("self.variables['" + variable + "']", line)
                             contract.add_assumption(line.strip())
-                        elif CONTRACT_GUARANTEES_HEADER in contract_header:
+                        elif CONTRACT_GUARANTEES_HEADER in goal_header:
                             list_of_variables = re.split(OPERATORS, line)
                             list_stripped = []
                             for elem in list_of_variables:
@@ -120,10 +142,10 @@ def parse(specfile):
                                 regx = re.compile(variable + '\s|' + variable + '$')
                                 line = regx.sub("self.variables['" + variable + "']", line)
                             contract.add_guarantee(line.strip())
-                        else: # (TODO) add error - unexpected contract heading
-                            pass
-                    else: # (TODO) add error - unexpected indentation
-                        pass
+                        else:
+                            raise UnexpectedGoalHeading
+                    else:
+                        raise UnexpectedIndentation
                 elif CGT_HEADER in file_header:
                     if ntabs == CGT_HEADER_INDENT:
                         cgt_header = line
@@ -142,7 +164,7 @@ def parse(specfile):
                                     compose_goals(contract_to_compose)
 
 
-    return contracts_dictionary, cgt_dictionary
+    return cgt_dictionary
 
 
 def _clean_line(line):

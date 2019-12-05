@@ -5,23 +5,42 @@ to store all system contracts and overall system alphabet"""
 from collections import OrderedDict
 from z3 import *
 
+
 class Contract(object):
     """Contract class stores data attributes of a contract
 
     Attributes:
         name: a string name for the contract
-        variables: a list of tuples containing string variables and initial values
-        assumptions: a list of string relations assumed by contract
-        guarantees: a list of string relations guaranteed by contract
+        variables: a dictionary containing the string of the variable as key, and the Z3 variable as value
+        assumptions: a list of Z3 relations assumed by contract
+        guarantees: a list of Z3 relations relations guaranteed by contract
     """
-    def __init__(self):
-        """Initialize a contract object"""
-        self.name = ''
-        self.variables = {}
-        self.assumptions = []
-        self.guarantees = []
 
-    def add_name(self, name):
+    def __init__(self,
+                 name='',
+                 variables=None,
+                 assumptions=None,
+                 guarantees=None):
+        """Initialize a contract object"""
+
+        self.name = name
+
+        if guarantees is None:
+            self.guarantees = []
+        else:
+            self.guarantees = guarantees
+
+        if assumptions is None:
+            self.assumptions = []
+        else:
+            self.assumptions = assumptions
+
+        if variables is None:
+            self.variables = {}
+        else:
+            self.variables = variables
+
+    def set_name(self, name):
         """Assigns the contract a name
 
         Args:
@@ -30,36 +49,34 @@ class Contract(object):
         self.name = name
 
     def get_name(self):
+
         return self.name
 
     def add_variable(self, variable):
         """Adds a variable to the contract variables
 
-        Args:
-            variable: a tuple containing a variable and initial value
+        Args:param variable: a tuple of strings containing name of the variable and a its type
         """
-        name, type = variable
-        if type == 'REAL':
+        name, var_type = variable
+        if var_type == 'REAL':
             self.variables[name] = Real(name)
-        elif type == 'BOOL':
+        elif var_type == 'BOOL':
             self.variables[name] = Bool(name)
-
 
     def add_variables(self, variables):
         """Adds a list of variables to the contract variables
 
-        Args:
-            variables: a list of tuples containing variables and initial values
+        :param variables: list of tuple of strings each containing name of the variable and a its type
         """
         for variable in variables:
             self.add_variable(variable)
 
     def get_variables(self):
+
         return self.variables
 
     def add_constant(self, constant):
-        """
-        Add constand together with the contract variables
+        """Add integer constant together with the contract variables
         :param constant: a tuple containing the constant name and the value (int)
         """
         name, value = constant
@@ -70,7 +87,7 @@ class Contract(object):
 
         Args:
             assumption: a string assumption
-        """''
+        """
         self.assumptions.append(eval(assumption))
 
     def add_guarantee(self, guarantee):
@@ -81,26 +98,13 @@ class Contract(object):
         """
         self.guarantees.append(eval(guarantee))
 
-    def set_assumptions(self, assumptions):
-        self.assumptions = assumptions
-
-    def set_guarantees(self, guarantees):
-        self.guarantees = guarantees
 
     def get_assumptions(self):
-        """Get a concatenated string of all assumptions
 
-        Returns:
-            A parenthesized, concatenated string of assumptions
-        """
         return self.assumptions
 
     def get_guarantees(self):
-        """Get a concatenated string of all guarantees
 
-        Returns:
-            A parenthesized, concatenated string of guarantees
-        """
         return self.guarantees
 
     def is_full(self):
@@ -153,6 +157,21 @@ class Contract(object):
         """Define a non-equality test"""
         return not self.__eq__(other)
 
+
+
+class Goal(Contract):
+
+    def __init__(self, description=""):
+        super().__init__()
+        self.description = description
+
+    def set_description(self, description):
+        self.description = description
+
+    def get_description(self):
+        return self.description
+
+
 class Contracts(object):
     """Contracts class stores all contracts for a system and the shared alphabet
 
@@ -160,6 +179,7 @@ class Contracts(object):
         contracts: a list of contract objects
         alphabet: a list of tuples containing the shared alphabet among all contracts
     """
+
     def __init__(self):
         """Initialize a contracts object"""
         self.contracts = OrderedDict()

@@ -12,7 +12,6 @@ class WrongParametersError(Exception):
 
 def compose_contracts(contracts, abstract_on_guarantees=None):
     """
-
     :param contracts: dictionary of goals or list of contracts to compose
            abstract_on_guarantees: list of guarantees to keep in the abstraction
     :return: True, contract which is the composition of the contracts in the goals or the contracts in the list
@@ -29,6 +28,8 @@ def compose_contracts(contracts, abstract_on_guarantees=None):
     else:
         raise WrongParametersError
 
+    composed_name = ""
+    variables = []
     assumptions = {}
     guarantees = {}
     abstracted_guarantees = {}
@@ -37,6 +38,8 @@ def compose_contracts(contracts, abstract_on_guarantees=None):
     abstracted_contracts = False
 
     for name, contract in list(contracts_dictionary.items()):
+        composed_name += name + "_"
+        variables.append(contract.get_variables())
         assumptions[name + "_assumptions"] = contract.get_assumptions()
         guarantees[name + "_guarantees"] = contract.get_guarantees()
         if contract.is_abstracted():
@@ -125,8 +128,12 @@ def compose_contracts(contracts, abstract_on_guarantees=None):
             raise AbstractionError
 
 
+    composed_contract = Contract(name=composed_name,
+                                 variables=variables,
+                                 assumptions=a_composition_simplified,
+                                 guarantees=g_composition_simplified)
 
-    return True, Contract(a_composition_simplified, g_composition_simplified)
+    return True, composed_contract
 
 
 def conjoin_contracts(contracts):

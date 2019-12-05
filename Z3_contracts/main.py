@@ -11,13 +11,13 @@ sys.path.append(os.path.join(os.getcwd(), os.path.pardir))
 
 if __name__ == "__main__":
 
-    contracts_dictionary, cgt_dictionary = parse('spec/test_composition.txt')
+    cgt_dictionary = parse('spec/test_composition.txt')
 
     for key, value in cgt_dictionary.items():
         print(str(key) + "\n" + str(value) + "____________________________________________________________________\n\n")
 
 
-    keep_short_distance = compose_goals(
+    keep_short_distance = conjoin_goals(
         [cgt_dictionary["accelerate_distance"],
          cgt_dictionary["communication_leader"]], "composition_test")
 

@@ -4,9 +4,11 @@ CONSTANTS:
     ZERO            := 0
     MAX_STEERING    := 1
 
-CONTRACT:
+GOAL:
 	NAME:
 		accelerate_distance
+	DESCRIPTION:
+        accelerate when the distance from the car in front is more than the desired distance
 	VARIABLES:
 		distance_front      := REAL
 		velocity_ego_t      := REAL
@@ -17,7 +19,7 @@ CONTRACT:
 		velocity_ego_tnext > velocity_ego_t
 
 
-CONTRACT:
+GOAL:
 	NAME:
 		communication_leader
 	VARIABLES:

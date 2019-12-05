@@ -6,6 +6,12 @@ from collections import OrderedDict
 from z3 import *
 from Z3_contracts.src.contract_operations import *
 
+
+class FailComposition(Exception):
+    print("Composition Failed")
+
+
+
 class Cgt(object):
     """
     Contract-based Goal Tree
@@ -112,20 +118,19 @@ def compose_goals(list_of_cgt, name=None, abstract_on_guarantees=None):
     for contracts in composition_contracts:
         satis, composed_contract = compose_contracts(contracts, abstract_on_guarantees=abstract_on_guarantees)
         if not satis:
-            print("composition failed")
-            return False, None
+            raise FailComposition
         composed_contract_list.append(composed_contract)
 
     # Creating a new Goal parent
     composed_goal = Cgt(name, composed_contract_list,
-                              sub_goals=goals,
+                              sub_goals=list_of_cgt,
                               sub_operation="COMPOSITION")
 
     # Connecting children to the parent
-    for goal in goals:
+    for goal in list_of_cgt:
         goal.set_parent(composed_goal, "COMPOSITION")
 
-    return True, composed_goal
+    return composed_goal
 
 
 def conjoin_goals(goals, name):
